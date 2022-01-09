@@ -1,8 +1,13 @@
+
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const fastify = require('fastify').default;
 const fastify_session = require('@fastify/session');
 const fastify_cookie = require('fastify-cookie');
 const fastify_static = require('fastify-static');
-const path = require('path');
+const fastify_multipart = require('fastify-multipart');
+const mime_types = require('mime-types');
 
 const app = fastify({ logger: true });
 
@@ -38,6 +43,7 @@ app.get('/*', async (request, reply) => {
 
 // @ts-ignore
 app.register(fastify_cookie);
+app.register(fastify_multipart);
 
 // @ts-ignore
 app.register(fastify_session, {
@@ -45,6 +51,37 @@ app.register(fastify_session, {
   cookie: { secure: false },
 });
 
+app.post('/upload', async function (request, reply) {
+  const file = await request.file();
+  const file_buffer = await file.toBuffer();
+  const file_hash = crypto.createHash('sha224').update(file_buffer).digest('hex');
+  const file_extname = path.extname(file.filename);
+  const file_new_name = file_hash.concat(file_extname);
+  fs.writeFileSync(path.join(process.cwd(), `./temp/${file_new_name}`), file_buffer);
+  console.log('file new name', file_new_name);
+  return reply.status(200).send({ 'filename': file_new_name });
+});
+
+app.get('/i/*', (request, reply) => {
+  const url = request.url;
+  const file_name = url.replace('/i/', '');
+  const file_path = path.join(process.cwd(), `./temp/${file_name}`);
+  if (fs.existsSync(file_path) === true) {
+    // 200
+    const file_buffer = fs.readFileSync(file_path);
+    const content_type = mime_types.contentType(file_name);
+    if (typeof content_type === 'string') {
+      return reply.status(200)
+        .header('Content-Type', content_type)
+        .send(file_buffer);
+    } else {
+      return reply.status(500).send();
+    }
+  } else {
+    // 404
+    return reply.status(404).send();
+  }
+});
 
 process.nextTick(async () => {
   try {

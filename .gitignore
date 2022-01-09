@@ -1,3 +1,4 @@
 /node_modules/
 /client/dist/
-/project.config.json/
+/temp/
+/project.config.json
