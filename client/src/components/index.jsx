@@ -8,7 +8,7 @@ function Index () {
   const [show_get_link_btn, set_show_get_link_btn] = useState({ display: 'none' });
   const [is_open, set_is_open] = useState(false);
   const [show_overlay, set_show_overlay] = useState({ display: 'none' });
-  const link = `http://localhost:3000/i/${uploaded_img}`;
+  const link = `https://imagehippo.blemmmm.xyz/i/${uploaded_img}`;
   const close_modal = () => {
     set_is_open(false);
     set_show_overlay({ display: 'none' });
@@ -74,7 +74,7 @@ function Index () {
                 onMouseEnter={() => set_show_get_link_btn({ display: 'block' })}
                 onMouseLeave={() => set_show_get_link_btn({ display: 'none' })}>
                 <img
-                  src={`http://localhost:3000/i/${uploaded_img}`}
+                  src={`https://imagehippo.blemmmm.xyz/i/${uploaded_img}`}
                   className="object-scale-down h-[500px] w-[500px]"
                 />
                 <button style={show_get_link_btn} onClick={() => open_modal()} className="h-fit absolute top-0 right-0 bg-[#00000080] text-white p-2 shadow-lg rounded font-semibold hover:bg-[#312e81e6] m-2">GET LINK</button>
