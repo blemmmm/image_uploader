@@ -65,11 +65,11 @@ process.nextTick(async () => {
   try {
 
     // ESBuild binary
-    const esbuild_path = path.join(cwd, './node_modules/.bin/esbuild.cmd');
+    const esbuild_path = path.join(cwd, './node_modules/.bin/esbuild');
     assert(fs.existsSync(esbuild_path) === true);
 
     // PostCSS binary
-    const postcss_path = path.join(cwd, './node_modules/.bin/postcss.cmd');
+    const postcss_path = path.join(cwd, './node_modules/.bin/postcss');
     assert(fs.existsSync(postcss_path) === true);
 
     // ESBuild entry
