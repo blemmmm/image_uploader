@@ -6,6 +6,7 @@ const fastify = require('fastify').default;
 const fastify_session = require('@fastify/session');
 const fastify_cookie = require('fastify-cookie');
 const fastify_static = require('fastify-static');
+const fastify_favicon = require('fastify-favicon');
 const fastify_multipart = require('fastify-multipart');
 const mime_types = require('mime-types');
 
@@ -20,6 +21,10 @@ const html = `
       <link href="/dist/esbuild/esbuild.css" rel="stylesheet">
       <link href="/dist/postcss/postcss.css" rel="stylesheet">
       <script src="https://code.iconify.design/2/2.1.0/iconify.min.js"></script>
+      <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+      <title>ImageHippo - Free Image Upload</title>
+      <meta name="title" content="ImageHippo - Free Image Upload">
+      <meta name="description" content="With ImageHippo you can upload, get link, and share your images on websites, forums, blogs, and more!">
   </head>
   <body>
       <div id="root"></div>
@@ -32,6 +37,9 @@ app.register(fastify_static, {
   root: path.join(process.cwd(), './client/dist'),
   prefix: '/dist/',
 });
+
+app.register(fastify_favicon, { path: './', name: 'favicon.ico' });
+
 // @ts-ignore
 app.get('/*', async (request, reply) => {
   return reply
