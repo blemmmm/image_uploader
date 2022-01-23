@@ -1,15 +1,25 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Icon } from '@iconify/react';
 import Swal from 'sweetalert2';
+import {
+  FacebookShareButton,
+  RedditShareButton,
+  TelegramShareButton,
+  TwitterShareButton } from 'react-share';
+
+
+
 
 function Index () {
+
   const [image, set_image] = useState(null);
   const [uploaded_img, set_uploaded_img] = useState(null);
-  const [show_get_link_btn, set_show_get_link_btn] = useState({ display: 'none' });
   const [is_open, set_is_open] = useState(false);
   const [show_overlay, set_show_overlay] = useState({ display: 'none' });
   const link = `https://imagehippo.blemmmm.xyz/i/${uploaded_img}`;
+  const inputRef = useRef();
+
   const close_modal = () => {
     set_is_open(false);
     set_show_overlay({ display: 'none' });
@@ -38,6 +48,19 @@ function Index () {
 
           const data = await response.json();
           set_uploaded_img(data.filename);
+          inputRef.current.value = null;
+          set_image(null);
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom',
+            showConfirmButton: false,
+            timer: 1500,
+          });
+
+          Toast.fire({
+            icon: 'success',
+            title: 'Image Uploaded!',
+          });
         },
       });
     } catch (err) {
@@ -46,7 +69,18 @@ function Index () {
   };
   const copy_link = async () => {
     await navigator.clipboard.writeText(link);
-    alert('copied!');
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'bottom',
+      showConfirmButton: false,
+      timer: 1500,
+    });
+
+    Toast.fire({
+      icon: 'success',
+      title: 'Link Copied!',
+    });
   };
   return (
     <div>
@@ -73,6 +107,7 @@ function Index () {
               required
               type="file"
               accept="image/*"
+              ref={inputRef}
               onChange={(e) => set_image(e.target.files[0])}>
               </input>
             </div>
@@ -80,14 +115,12 @@ function Index () {
           </form>
           {uploaded_img ? (
             <div className="flex justify-center items-center flex-col py-6 bg-gray-50 h-[500px] w-[500px]">
-              <div className="relative"
-                onMouseEnter={() => set_show_get_link_btn({ display: 'block' })}
-                onMouseLeave={() => set_show_get_link_btn({ display: 'none' })}>
+              <div className="relative">
                 <img
                   src={`https://imagehippo.blemmmm.xyz/i/${uploaded_img}`}
                   className="object-scale-down h-[500px] w-[500px]"
                 />
-                <button style={show_get_link_btn} onClick={() => open_modal()} className="h-fit absolute top-0 right-0 bg-[#00000080] text-white p-2 shadow-lg rounded font-semibold hover:bg-[#312e81e6] m-2">GET LINK</button>
+                <button onClick={() => open_modal()} className="h-fit absolute top-0 right-0 bg-[#00000080] text-white p-2 shadow-lg rounded font-semibold hover:bg-[#312e81e6] m-2"><Icon className="h-6 w-6" icon="bx:bxs-share-alt" /></button>
               </div>
 
             </div>
@@ -136,14 +169,38 @@ function Index () {
                   className="text-lg text-left font-medium leading-6 text-gray-900"
                 >
                   <div className="flex flex-row items-center">
-                    <Icon icon="bx:bx-link-alt" className="h-8 w-8 px-1 py-1 rounded-full text-white bg-gray-900" />
-                    <span className="px-2">Get Link</span>
+                    <Icon icon="fa-solid:share" className="h-6 w-6 px-1 text-gray-900" />
+                    <span>Share</span>
                   </div>
 
                 </Dialog.Title>
                 <div className="relative text-gray-700 my-4">
                   <input className="w-full h-10 pl-3 pr-8 text-base font-semibold border rounded-md disabled:bg-indigo-200 disabled:text-indigo-700" type="text" value={link} disabled />
                   <button onClick={copy_link} className="absolute inset-y-0 right-0 flex items-center px-4 font-bold text-white bg-indigo-700 rounded-r-md hover:bg-indigo-800 focus:bg-indigo-700" on>Copy Link</button>
+                </div>
+                <div className="flex flex-row items-center justify-center">
+                  <FacebookShareButton url={link}
+                    quote={`I uploaded a photo on ImageHippo, check it out! --> ${link}`}
+                    hashtag='#ImageHippo'>
+                    <button className="px-1 text-5xl" title="Share to Facebook">
+                      <Icon icon="logos:facebook" />
+                    </button>
+                  </FacebookShareButton>
+                  <TwitterShareButton url={link} title='I uploaded a photo on ImageHippo, check it out!'>
+                    <button className="px-1 text-5xl" title="Tweet your Photo">
+                      <Icon icon="logos:twitter" />
+                    </button>
+                  </TwitterShareButton>
+                  <TelegramShareButton url={link} title='I uploaded a photo on ImageHippo, check it out!'>
+                    <button className="px-1 text-5xl" title="Send to Telegram">
+                      <Icon icon="logos:telegram" />
+                    </button>
+                  </TelegramShareButton>
+                  <RedditShareButton url={link} title='I uploaded a photo on ImageHippo, check it out!'>
+                    <button className="px-1 text-5xl" title="Post to Reddit">
+                      <Icon icon="logos:reddit-icon" />
+                    </button>
+                  </RedditShareButton>
                 </div>
               </div>
             </Transition.Child>
@@ -154,7 +211,7 @@ function Index () {
       {/* Overlay */}
       <div
         style={show_overlay}
-        className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-screen w-screen"
+        className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full"
       ></div>
     </div>
   );
