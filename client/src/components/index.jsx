@@ -1,6 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { Icon } from '@iconify/react';
+import Swal from 'sweetalert2';
 
 function Index () {
   const [image, set_image] = useState(null);
@@ -23,13 +24,22 @@ function Index () {
       const form_data = new FormData();
       form_data.append('file', image);
 
-      const response = await fetch('/upload', {
-        method: 'POST',
-        body: form_data,
-      });
+      Swal.fire({
+        title: 'Uploading your image...',
+        timer: 1000,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+        didClose: async () => {
+          const response = await fetch('/upload', {
+            method: 'POST',
+            body: form_data,
+          });
 
-      const data = await response.json();
-      set_uploaded_img(data.filename);
+          const data = await response.json();
+          set_uploaded_img(data.filename);
+        },
+      });
     } catch (err) {
       console.log(err.message);
     }
