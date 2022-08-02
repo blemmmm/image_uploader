@@ -67,8 +67,10 @@ app.post("/upload", async function (request, reply) {
 
   const old_metadata = await sharp(file_buffer).metadata();
 
-  // convert image data into png format
-  const converted_buffer = await sharp(file_buffer).png().toBuffer();
+  // convert image data into JPEG format
+  const converted_buffer = await sharp(file_buffer)
+    .jpeg({ mozjpeg: true })
+    .toBuffer();
 
   const new_metadata = await sharp(converted_buffer).metadata();
 
