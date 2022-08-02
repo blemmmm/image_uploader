@@ -1,14 +1,14 @@
-
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const fastify = require('fastify').default;
-const fastify_session = require('@fastify/session');
-const fastify_cookie = require('fastify-cookie');
-const fastify_static = require('fastify-static');
-const fastify_favicon = require('fastify-favicon');
-const fastify_multipart = require('fastify-multipart');
-const mime_types = require('mime-types');
+const fs = require("fs");
+const path = require("path");
+const sharp = require("sharp");
+const crypto = require("crypto");
+const fastify = require("fastify").default;
+const fastify_session = require("@fastify/session");
+const fastify_cookie = require("fastify-cookie");
+const fastify_static = require("fastify-static");
+const fastify_favicon = require("fastify-favicon");
+const fastify_multipart = require("fastify-multipart");
+const mime_types = require("mime-types");
 
 const app = fastify({ logger: true });
 
@@ -34,20 +34,16 @@ const html = `
 `;
 // @ts-ignore
 app.register(fastify_static, {
-  root: path.join(process.cwd(), './client/dist'),
-  prefix: '/dist/',
+  root: path.join(process.cwd(), "./client/dist"),
+  prefix: "/dist/",
 });
 
-app.register(fastify_favicon, { path: './', name: 'favicon.ico' });
+app.register(fastify_favicon, { path: "./", name: "favicon.ico" });
 
 // @ts-ignore
-app.get('/*', async (request, reply) => {
-  return reply
-    .status(200)
-    .header('Content-Type', 'text/html')
-    .send(html);
+app.get("/*", async (request, reply) => {
+  return reply.status(200).header("Content-Type", "text/html").send(html);
 });
-
 
 // @ts-ignore
 app.register(fastify_cookie);
@@ -55,32 +51,51 @@ app.register(fastify_multipart);
 
 // @ts-ignore
 app.register(fastify_session, {
-  secret: 'a secret with minimum length of 32 characters',
+  secret: "a secret with minimum length of 32 characters",
   cookie: { secure: false },
 });
 
-app.post('/upload', async function (request, reply) {
+app.post("/upload", async function (request, reply) {
   const file = await request.file();
   const file_buffer = await file.toBuffer();
-  const file_hash = crypto.createHash('sha224').update(file_buffer).digest('hex');
+  const file_hash = crypto
+    .createHash("sha224")
+    .update(file_buffer)
+    .digest("hex");
   const file_extname = path.extname(file.filename);
   const file_new_name = file_hash.concat(file_extname);
-  fs.writeFileSync(path.join(process.cwd(), `./temp/${file_new_name}`), file_buffer);
-  console.log('file new name', file_new_name);
-  return reply.status(200).send({ 'filename': file_new_name });
+
+  const old_metadata = await sharp(file_buffer).metadata();
+
+  // convert image data into png format
+  const converted_buffer = await sharp(file_buffer).png().toBuffer();
+
+  const new_metadata = await sharp(converted_buffer).metadata();
+
+  fs.writeFileSync(
+    path.join(process.cwd(), `./temp/${file_new_name}`),
+    file_buffer
+  );
+  console.log("old metadata", old_metadata);
+  return reply.status(200).send({
+    filename: file_new_name,
+    old_metadata: old_metadata,
+    new_metadata: new_metadata,
+  });
 });
 
-app.get('/i/*', (request, reply) => {
+app.get("/i/*", (request, reply) => {
   const url = request.url;
-  const file_name = url.replace('/i/', '');
+  const file_name = url.replace("/i/", "");
   const file_path = path.join(process.cwd(), `./temp/${file_name}`);
   if (fs.existsSync(file_path) === true) {
     // 200
     const file_buffer = fs.readFileSync(file_path);
     const content_type = mime_types.contentType(file_name);
-    if (typeof content_type === 'string') {
-      return reply.status(200)
-        .header('Content-Type', content_type)
+    if (typeof content_type === "string") {
+      return reply
+        .status(200)
+        .header("Content-Type", content_type)
         .send(file_buffer);
     } else {
       return reply.status(500).send();
@@ -93,7 +108,7 @@ app.get('/i/*', (request, reply) => {
 
 process.nextTick(async () => {
   try {
-    await app.listen(3000, '0.0.0.0');
+    await app.listen(3000, "0.0.0.0");
   } catch (err) {
     app.log.error(err);
     process.exit(1);
